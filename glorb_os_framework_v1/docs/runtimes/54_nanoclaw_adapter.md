@@ -120,3 +120,24 @@ NanoClaw is most effective as part of a multi-runtime topology:
 2. Delegate narrow evaluation tasks (critique, verification, classification) to NanoClaw
 3. The adapter manages the routing between runtimes
 4. The lead agent on the primary runtime coordinates and the NanoClaw calls are subagent tasks
+
+## Capability Manifest
+
+```yaml
+runtime_name: nanoclaw
+compliance_level: 1
+session_model: stateless
+subagent_nesting_depth: 0
+max_concurrent_agents: 100
+memory_layers_supported: [working]
+memory_persistence: none
+interruptible: false
+approval_model: none
+tool_categories: [structured_output]
+max_context_size: 32000
+parallel_execution: true
+async_messaging: false
+human_command_support: []
+cost_model: per_call
+sandbox_model: full_isolation
+```

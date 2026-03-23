@@ -107,3 +107,24 @@ Because OpenClaw runtimes provide less built-in structure than Claude Code, the 
 5. Token budget tracking
 6. Agent-to-agent message routing
 7. Topology enforcement (ensuring agents operate within their defined scope)
+
+## Capability Manifest
+
+```yaml
+runtime_name: openclaw
+compliance_level: 2
+session_model: stateful
+subagent_nesting_depth: unlimited
+max_concurrent_agents: 50
+memory_layers_supported: [working, session, mission, project, reusable, archived]
+memory_persistence: mission
+interruptible: false
+approval_model: adapter_provided
+tool_categories: [code_execution, web_search, web_fetch, structured_output]
+max_context_size: 128000
+parallel_execution: true
+async_messaging: true
+human_command_support: [ESCALATE, RECOMPILE, ABORT, REDIRECT]
+cost_model: per_token
+sandbox_model: container
+```

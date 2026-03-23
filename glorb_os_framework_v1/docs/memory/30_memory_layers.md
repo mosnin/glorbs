@@ -90,3 +90,45 @@ Demotion moves information from a higher layer to a lower (shorter-lived) layer 
 ## Cross-Layer Query
 
 An agent may query across layers up to its access level. Queries follow the retrieval priority defined in 34 Memory Retrieval Policy. Lower layers (working, session) are searched first for recency, then higher layers (mission, project, reusable) for breadth.
+
+## Adapter Memory Interface
+
+### Unified Memory Access
+All memory operations go through the runtime adapter's memory methods (see 56 Adapter Interface Spec). The control plane NEVER accesses storage directly. This ensures runtime agnosticism.
+
+#### Read Operations
+All agents query memory via retrieve_memory(layer, query, scope, max_results):
+1. The adapter translates the GLORB layer name to its native storage mechanism
+2. The adapter applies access control: the requesting agent's memory scope (see 08 Governance Model) is checked against the requested layer
+3. The adapter executes the query against its storage backend
+4. Results are returned in a standard format: content, layer, relevance_score, recency, provenance_id (see 56)
+
+#### Write Operations
+Agents write to memory via persist_memory(layer, key, content, metadata):
+1. The adapter validates the agent's write permissions for the target layer
+2. The adapter translates the write to its native storage mechanism
+3. Metadata (provenance record ID, agent, timestamp) is stored alongside the content
+4. The adapter returns success or failure status
+
+#### Compression Operations
+Memory compression is triggered via compress_memory(layer, strategy, scope):
+1. The adapter applies the named compression strategy (see 32) to the specified layer
+2. Provenance links are preserved through compression (see 32 Provenance Preservation)
+3. The adapter returns the compression result (items compressed, space saved)
+
+### Adapter Storage Backends
+Each runtime adapter maps GLORB memory layers to native storage. The control plane does not need to know the storage mechanism.
+
+| Runtime | Working | Session | Mission | Project | Reusable | Archived |
+|---|---|---|---|---|---|---|
+| Claude Code | Context window | Context + TodoWrite | Repository files | Repository + CLAUDE.md | CLAUDE.md (user-level) | Git history |
+| OpenClaw | API call context | Message history (adapter-managed) | External DB/store | External persistent store | External persistent store | External persistent store |
+| NanoClaw | Prompt content | Not supported (injected per-call) | Injected by adapter | Injected by adapter | Injected by adapter | Not practical |
+
+### Memory on Stateless Runtimes
+When the runtime is stateless (session_model: stateless, see 57):
+1. Working memory is the prompt content for the current call. It is not persisted
+2. Session memory does not exist. Each call is independent
+3. Mission, project, and reusable memory must be injected into the prompt by the lead agent (on a stateful runtime) before dispatching the call
+4. The lead agent is responsible for extracting important information from stateless agent results and persisting it to the appropriate layer via its own adapter
+5. Stateless agents cannot write to memory layers directly. All persistence is mediated by the lead agent

@@ -132,12 +132,43 @@ Alerts notify the human operator of conditions that require attention.
 | Repeated gate failure | Same Quality Gate fails 2+ times | Medium |
 | Governance violation | An agent attempted an unauthorized action | High |
 
-## Observability in Claude Code
+## Observability by Runtime
 
-In the Claude Code runtime (see 52), observability maps to:
+### Runtime-Specific Observability
 
-1. **Metrics**: Tracked via TodoWrite and inline status updates in the conversation
-2. **Event log**: The conversation itself serves as the event log
-3. **Views**: The human reads the conversation. Structured summaries can be written to files
-4. **Alerts**: Surfaced as direct messages to the human in the conversation
-5. **Persistence**: Written to files in the repository for cross-session visibility
+#### Claude Code
+- Metrics: Tracked via TodoWrite and inline status updates in the conversation
+- Event log: The conversation itself serves as the event log
+- Views: The human reads the conversation. Structured summaries can be written to files
+- Alerts: Surfaced as direct messages to the human in the conversation
+- Persistence: Written to files in the repository for cross-session visibility
+
+#### OpenClaw
+- Metrics: Collected from API call metadata (token counts, latency, error rates)
+- Event log: Structured log derived from API request/response pairs. Adapter formats and stores
+- Views: Adapter provides a dashboard endpoint or writes structured reports to external storage
+- Alerts: Adapter sends notifications via configured channels (webhooks, email, messaging)
+- Persistence: External logging service (e.g., structured log store, time-series database)
+
+#### NanoClaw
+- Metrics: Limited to per-call metadata (input tokens, output tokens, latency, success/failure)
+- Event log: Call input/output pairs logged by the adapter (NanoClaw itself has no logging)
+- Views: Aggregated by the lead agent's runtime. NanoClaw provides raw data only
+- Alerts: Not applicable within NanoClaw. The lead agent's runtime handles alerting based on NanoClaw call results
+- Persistence: The adapter logs call metadata. The lead agent persists meaningful results
+
+## Adapter Observability Interface
+
+### Abstract Observability Methods
+All observability operations go through the runtime adapter (see 56 Adapter Interface Spec):
+
+1. **log_event(event)**: Every operational event and provenance record is logged through the adapter. The adapter translates to its native logging mechanism. Events follow the schema defined in the Event Log section above.
+
+2. **get_metrics(scope)**: Retrieves current metrics for a scope (mission, agent, runtime). The adapter collects metrics from its native monitoring and translates to the standard metric schema.
+
+### Cross-Runtime Observability
+In multi-runtime missions:
+1. Each adapter logs events in the common schema (see Event Log above)
+2. The lead agent's runtime aggregates events from all adapters into a unified view
+3. Provenance records reference events across runtimes using the common record ID format (see 06)
+4. Metrics are collected per-runtime and summed at the mission level for the mission dashboard

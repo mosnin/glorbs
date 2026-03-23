@@ -96,3 +96,55 @@ When multiple agents of the same role type are available (e.g., multiple Builder
 3. **Convergence**: All work streams complete. Outputs are merged (see 24)
 4. **Review**: The merged output passes through Quality Gates (see 26)
 5. **Dissolution**: On mission completion, agents are released. Session memory is preserved, working memory is discarded
+
+## Async Orchestration Mode
+
+An alternative orchestration protocol for stateless or async runtimes. When the standard synchronous protocols are not viable, async mode provides equivalent coordination guarantees through fire-and-collect patterns mediated by a stateful lead agent.
+
+### When Async Mode Is Used
+
+1. The runtime's Capability Manifest (see 57) has session_model: stateless
+2. The runtime's Capability Manifest has async_messaging: true but interruptible: false
+3. The Topology Compiler explicitly enables async mode for specific agents in a multi-runtime topology
+
+### Async Message Protocol
+
+Replace synchronous acknowledgment with fire-and-collect:
+
+1. The lead agent (on a stateful runtime) dispatches tasks to stateless agents as independent calls via spawn_agent() (see 56)
+2. Each stateless agent receives its full context in the spawn call (no incremental messages)
+3. The stateless agent executes and returns its complete result. There is no mid-task communication
+4. The lead agent collects results. No acknowledgment handshake is needed
+5. If a stateless agent's result is not received within the timeout, the lead agent treats it as a failure and applies recovery (see 07)
+
+### Async Handoff Protocol
+
+Replace the synchronous 6-step handoff with:
+
+1. The sending agent completes its work and writes the output to Mission Memory via persist_memory() (see 56)
+2. The lead agent (stateful) detects the completion and dispatches the next agent with the stored output as input context
+3. No direct agent-to-agent communication. The lead agent mediates all handoffs
+4. This works even when the sending and receiving agents are on different runtimes
+
+### Async Parallel Execution
+
+1. The lead agent dispatches all parallel tasks simultaneously via multiple spawn_agent() calls
+2. Results are collected as they arrive (no status polling)
+3. The convergence point waits for all results or times out
+4. Partial results from timed-out agents are handled per Partial Failure rules (see 07)
+
+### Async Limitations
+
+1. No mid-task intervention (FREEZE/RESUME have no effect on in-flight stateless agents)
+2. No incremental status updates (agents complete fully or time out)
+3. Critique loops require sequential round-trips (spawn critic, collect result, spawn revision, collect result)
+4. Higher latency for sequential topologies (each handoff goes through the lead agent)
+
+### Mixed-Mode Orchestration
+
+In multi-runtime topologies, some agents may be synchronous and others async:
+
+1. The lead agent tracks each agent's mode (sync or async) based on its runtime's manifest
+2. Sync agents use the standard handoff protocol
+3. Async agents use the async handoff protocol
+4. The lead agent translates between modes at handoff boundaries

@@ -138,3 +138,24 @@ The Claude Code Adapter maps GLORB framework concepts to Claude Code's native ca
 4. Prefer small, focused subagent tasks over large, complex ones. Subagents work best with clear scope
 5. Use git commits as recovery checkpoints. If a mission fails, the last commit is the restore point
 6. When context pressure is high, offload research to Explore subagents and keep synthesis in the primary session
+
+## Capability Manifest
+
+```yaml
+runtime_name: claude_code
+compliance_level: 3
+session_model: stateful
+subagent_nesting_depth: 1
+max_concurrent_agents: 10
+memory_layers_supported: [working, session, mission, project, reusable, archived]
+memory_persistence: permanent
+interruptible: true
+approval_model: built_in
+tool_categories: [file_read, file_write, code_execution, web_search, web_fetch, structured_output]
+max_context_size: 200000
+parallel_execution: true
+async_messaging: false
+human_command_support: [FREEZE, FORK, ESCALATE, REPLACE, RECOMPILE, INCREASE_CRITIQUE, LOWER_RIGOR, LOCK_ASSUMPTIONS, COMPRESS_CONTEXT, REDUCE_COST, OVERRIDE, ABORT, REDIRECT, RESUME]
+cost_model: per_token
+sandbox_model: os_level
+```

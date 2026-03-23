@@ -123,3 +123,26 @@ When no specific constraints drive the choice:
 | Audit | Claude Code | File access for reviewing artifacts |
 | Synthesis | OpenClaw | Multi-source, benefits from parallel sessions |
 | Negotiation | OpenClaw | Multi-perspective, benefits from isolated sessions |
+
+## Router Integration
+
+### Integration with Router
+The Runtime Selection Policy runs BEFORE the Router (see 20) makes its final decision, not after. The flow is:
+
+1. The Constraint Compiler (see 03) produces normalized constraints including tool requirements, safety requirements, and cost constraints
+2. The Runtime Selection Policy evaluates available runtimes against these constraints and produces a ranked list of viable runtimes with their Capability Manifests (see 57)
+3. The Router receives the top-ranked runtime's Capability Manifest as its 9th input (see 20 Runtime-Aware Routing)
+4. The Router produces a topology that is compatible with the selected runtime
+5. The Topology Compiler validates the topology against the runtime manifest (see 21 Runtime Capability Validation)
+
+This ordering prevents the system from producing topologies that are impossible on the available runtime.
+
+### Runtime Pre-selection
+If the human specifies a runtime in the mission definition, steps 1-2 are skipped. The specified runtime's manifest is passed directly to the Router. If the specified runtime cannot satisfy the mission's constraints, the Constraint Compiler flags a validation error (see 03).
+
+### Multi-Runtime Pre-selection
+If the mission will span multiple runtimes:
+1. The primary runtime is selected using the standard algorithm
+2. For each agent role in the expected topology, the Policy identifies the optimal runtime
+3. The Router receives all manifests and the Policy's per-role runtime recommendations
+4. The Topology Compiler assigns each agent to a runtime and validates per-agent compatibility

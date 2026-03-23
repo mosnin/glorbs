@@ -73,6 +73,15 @@ How to size the topology based on mission characteristics.
 4. Identify parallel branches: which agents can work simultaneously
 5. Identify convergence points: where parallel work merges (see 24 Merge and Reduction)
 
+### Step 3.5: Runtime Capability Validation
+
+1. Retrieve the target runtime's Capability Manifest (see 57) via the adapter's query_capabilities() method (see 56 Adapter Interface Spec)
+2. Check subagent nesting: if the topology has agents spawning subagents, verify nesting depth does not exceed the manifest's subagent_nesting_depth. If it does, flatten the topology by promoting subagents to peer agents coordinated by the lead
+3. Check concurrency: if the topology has parallel branches, verify the number of simultaneous agents does not exceed max_concurrent_agents. If it does, serialize some branches
+4. Check memory: verify the topology's memory requirements (per policy, see 04) are satisfied by memory_layers_supported. If mission memory is required but not supported, use adapter-mediated external storage or downgrade memory policy
+5. Check tools: verify each agent's tool permissions (see 10) map to tools available on the runtime (via list_available_tools(), see 56). If a required tool is missing, flag the agent for runtime reassignment or capability downgrade
+6. Check session model: if the topology requires stateful agents (checkpoint autonomy, pause/resume) but the runtime is stateless, enable async orchestration mode (see 22) for those agents
+
 ### Step 4: Validate
 
 1. Check that total agent count does not exceed the Policy limit (see 04)
@@ -107,3 +116,8 @@ The topology can be modified during execution under these conditions:
 | Agent with no input source | Assign the lead agent as the input source |
 | Agent with no output target | Assign the lead agent as the output target or connect to the Deliverable Compiler |
 | Governance violation | Reduce the violating agent's permissions to comply with inheritance rules |
+| Subagent nesting exceeds runtime limit | Flatten topology: promote subagents to peers |
+| Concurrent agent count exceeds runtime limit | Serialize parallel branches |
+| Required memory layer not supported | Use adapter-mediated external storage |
+| Required tool not available on runtime | Reassign agent to compatible runtime or remove tool dependency |
+| Stateful topology on stateless runtime | Enable async orchestration mode |

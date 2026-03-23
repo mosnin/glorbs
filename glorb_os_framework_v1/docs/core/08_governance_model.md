@@ -139,6 +139,39 @@ Governance profiles are preset combinations of dimension settings for common age
 4. A subagent's autonomy level may be equal to or lower than its parent's
 5. If a parent agent is paused or retired, its subagents inherit the pause or retirement unless explicitly reassigned by the lead
 
+## Governance on Stateless Runtimes
+
+### Stateless Runtime Constraints
+When an agent runs on a stateless runtime (session_model: stateless in the Capability Manifest, see 57):
+
+1. Autonomy level is always Full for the duration of a single call. The agent cannot be interrupted mid-execution
+2. Checkpoint autonomy is not available. Replace with pre-call validation: the lead agent validates the agent's inputs against governance rules BEFORE dispatching the call
+3. Supervised autonomy is not available. Replace with post-call review: the lead agent evaluates the agent's output against governance rules AFTER the call completes
+4. FREEZE command has no effect on in-flight stateless agents. The lead agent can prevent future dispatches to a frozen agent but cannot halt a running call
+5. Stop conditions are enforced by the adapter's timeout mechanism. If the call exceeds its resource limit, the adapter terminates it
+
+### Pre-call Governance Check
+Before dispatching a task to a stateless agent, the lead agent (on a stateful runtime) validates:
+1. The task is within the agent's authority scope
+2. The tools the agent will need are within its tool permissions
+3. The memory context being injected is within the agent's memory scope
+4. The task does not require irreversible actions (if it does, the task must run on a stateful runtime with approval support)
+
+### Post-call Governance Review
+After receiving a result from a stateless agent, the lead agent validates:
+1. The output is within the agent's defined scope (no scope violations)
+2. No unauthorized tool calls were made (check the result metadata)
+3. No governance violations occurred during execution
+4. If violations are detected post-call, the output is rejected and logged to the Provenance Graph
+
+### Governance Profile: Stateless Worker
+Add a new governance profile for stateless agents:
+- Authority: Execute (cannot exceed)
+- Tools: Per task assignment (validated pre-call)
+- Memory: Injected context only (no direct layer access)
+- Autonomy: Full within single call, governed pre/post-call
+- Use for: Agents on NanoClaw or other stateless runtimes
+
 ## Governance Violations
 
 When an agent attempts an action outside its governance boundaries:

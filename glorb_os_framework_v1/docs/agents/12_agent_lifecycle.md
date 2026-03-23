@@ -130,3 +130,52 @@ Each state transition emits an event that can trigger system actions.
 | Active -> Retired | agent.retired | Agent's pending tasks are reassigned or flagged. Memory is promoted per layer rules (see 30) |
 | Any -> Archived | agent.archived | Agent record is moved to Archived Memory |
 | Active -> Forked | agent.forked | Fork is recorded in Provenance Graph with link to original |
+
+## Stateless Agent Lifecycle
+
+### Stateless Lifecycle Model
+Agents on stateless runtimes (session_model: stateless, see 57 Runtime Capability Manifest) use a simplified lifecycle with 4 states:
+
+1. **Specified**: The agent spec exists but no call has been made. Equivalent to Drafted + Instantiated
+2. **Executing**: The agent is processing a single call. This state is transient and uninterruptible
+3. **Completed**: The call returned a result. The agent can be re-invoked for another task
+4. **Discarded**: The agent spec is no longer needed. Equivalent to Retired + Archived
+
+### Stateless State Transitions
+```
+Specified -> Executing -> Completed -> Executing (re-invocation)
+                |              |
+                v              v
+            Completed      Discarded
+            (timeout)
+```
+
+### Mapping Stateless to Stateful Lifecycle
+When the control plane references lifecycle states, stateless agents map as follows:
+
+| Stateful State | Stateless Equivalent | Notes |
+|---|---|---|
+| Drafted | Specified | Spec exists, not yet called |
+| Instantiated | Specified | No separate validation step; validated pre-call |
+| Active | Executing | In-flight call |
+| Specialized | Not applicable | Stateless agents cannot narrow scope mid-execution |
+| Forked | Parallel invocation | Two calls with the same spec but different inputs |
+| Paused | Not applicable | Cannot pause a stateless call |
+| Merged | Not applicable | Results are merged by the lead agent, not the stateless agent |
+| Retired | Discarded | Spec is no longer dispatched to |
+| Archived | Discarded | Spec may be stored in Reusable Memory separately |
+
+### Re-invocation
+A stateless agent in Completed state can be re-invoked:
+1. The lead agent dispatches a new task using the same agent spec
+2. The adapter creates a fresh execution context (no state carried from prior calls)
+3. Any context the agent needs must be explicitly provided in the spawn call
+4. Re-invocation is how critique loops work on stateless runtimes: spawn critic, collect result, spawn revision with critique as input, collect result
+
+### Stateless Lifecycle Events
+| Event | Trigger | System Action |
+|---|---|---|
+| agent.dispatched | spawn_agent() called | Provenance Graph records the dispatch with input context |
+| agent.completed | Call returns result | Lead agent evaluates result. Post-call governance review |
+| agent.timeout | Call exceeds time/token limit | Treat as failure. Apply recovery (see 07) |
+| agent.discarded | No more tasks for this spec | Spec archived if evaluation warrants (see 16) |

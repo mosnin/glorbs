@@ -111,3 +111,48 @@ When a subagent completes and returns its result to the parent:
 3. If the result is partial, the parent evaluates whether the partial result is usable (see 07 Failure Recovery, Partial Failure Handling)
 4. If the result is blocked, the parent either resolves the blocker itself, spawns a different subagent, or escalates
 5. The subagent's contribution is recorded in the Provenance Graph with the parent as the incorporating agent
+
+## Async Spawning Protocol
+
+### When Async Spawning Is Used
+1. The target runtime's Capability Manifest (see 57) has session_model: stateless
+2. The parent agent is on a stateful runtime but the subagent will execute on a stateless runtime (cross-runtime spawning)
+3. The lead agent explicitly selects async mode for performance (fire-and-forget parallel tasks)
+
+### Async Spawn Process
+
+#### Step 1: Prepare Context Package
+Unlike synchronous spawning where context inheritance is incremental, async spawning requires a COMPLETE context package upfront:
+1. All context the subagent needs must be serialized into the spawn call
+2. Include: task description, relevant mission memory excerpts, constraints, success criteria, output contract
+3. The context package replaces the context inheritance matrix from the synchronous protocol
+4. Size the context package to fit within the target runtime's max_context_size (see 57)
+
+#### Step 2: Dispatch
+1. Call spawn_agent() (see 56 Adapter Interface Spec) with the agent spec and context package
+2. The call returns immediately with an agent_id (or call_id for stateless runtimes)
+3. The parent does NOT wait for the subagent to complete. It continues its own work or dispatches additional subagents
+
+#### Step 3: Collect Results
+1. The parent (or lead agent) periodically checks for completed subagent results
+2. On stateless runtimes, results are available when the call completes (adapter buffers them)
+3. The parent retrieves results via receive_messages() (see 56) or the adapter's native result collection
+4. Results include: output, status (complete/partial/timeout), execution metadata
+
+#### Step 4: Handle Non-response
+1. If a subagent does not return within the timeout, it is treated as a failure
+2. The adapter terminates the call if possible
+3. The parent applies the standard failure recovery protocol (see 07)
+4. No orphan detection is needed for stateless subagents — they terminate on completion or timeout
+
+### Async Spawning Limits
+Same limits as synchronous spawning (see Spawn Limits table), but additionally:
+1. Stateless subagents do not count toward the "active agent" limit once completed (they release resources immediately)
+2. The lead agent may spawn more total stateless subagents over the mission lifetime than the concurrent limit, as long as concurrent count stays within bounds
+
+### Cross-Runtime Spawning
+When a parent on one runtime spawns a subagent on a different runtime:
+1. The parent calls spawn_agent() on the TARGET runtime's adapter (not its own)
+2. The context package is serialized to text (the universal exchange format)
+3. Results are returned as text and deserialized by the parent's adapter
+4. Provenance records span both runtimes, linked by the parent's provenance ID

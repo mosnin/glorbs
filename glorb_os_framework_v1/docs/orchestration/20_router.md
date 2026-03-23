@@ -90,6 +90,25 @@ Routing decisions can be revised during execution when:
 
 Re-routing triggers a new pass through this decision matrix with updated inputs. The Provenance Graph (see 06) records both the original and revised routing decisions.
 
+## Runtime-Aware Routing
+
+After the Routing Decision Matrix produces a candidate topology, the Router checks it against the available runtime's Capability Manifest (see 57 Runtime Capability Manifest).
+
+### Runtime Compatibility Check
+
+1. If the candidate topology requires subagent nesting deeper than the runtime supports (subagent_nesting_depth), downgrade to a flatter topology
+2. If the candidate topology requires more concurrent agents than the runtime supports (max_concurrent_agents), serialize parallel branches or reduce agent count
+3. If the candidate topology requires stateful agents but the runtime is stateless (session_model), switch to async orchestration mode (see 22) or select a different runtime
+4. If the candidate topology requires human commands (FREEZE, RESUME) but the runtime does not support them (human_command_support), remove checkpoint-dependent workflow steps or escalate to human for runtime selection
+
+### Router Input 9: Runtime Capability
+
+The Router now accepts a 9th input: the Capability Manifest of the target runtime (or manifests, if multiple runtimes are available). This input is optional for backward compatibility. When absent, the Router assumes a Level 3 (Full) runtime.
+
+### Routing Decision Matrix: Runtime Level Constraint
+
+If the runtime is Level 1 (Minimal), the Router constrains output to Solo Agent or Escalation only. If Level 2 (Standard), all topologies are available. If Level 3 (Full), all topologies with full governance features.
+
 ## Router Anti-patterns
 
 1. Routing every mission to a full team topology regardless of complexity
