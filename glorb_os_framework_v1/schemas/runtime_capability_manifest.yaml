@@ -1,0 +1,16 @@
+runtime_name: string
+compliance_level: integer
+session_model: string
+subagent_nesting_depth: integer
+max_concurrent_agents: integer
+memory_layers_supported: list
+memory_persistence: string
+interruptible: boolean
+approval_model: string
+tool_categories: list
+max_context_size: integer
+parallel_execution: boolean
+async_messaging: boolean
+human_command_support: list
+cost_model: string
+sandbox_model: string

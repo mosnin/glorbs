@@ -10,3 +10,9 @@ output_contract: object
 escalation_rules: list
 stop_conditions: list
 success_criteria: list
+
+# Optional properties
+parent_agent: string
+lifecycle_state: string
+performance_history: object
+authority: string
