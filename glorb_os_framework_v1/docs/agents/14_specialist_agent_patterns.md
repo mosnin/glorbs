@@ -106,6 +106,16 @@ Specialist patterns are reusable archetypes that define an agent's purpose, capa
 - When to use: Long-running missions. Missions that span multiple sessions. When memory conflicts are detected
 - When not to use: Short single-session missions with minimal memory requirements
 
+### 11 Operator
+
+- Purpose: Executes negotiation tactics, manages stakeholder interactions, and implements agreed strategies
+- Key capabilities: Precision (high), Risk tolerance (medium), Autonomy level (medium), Domain expertise (medium-high)
+- Inputs: Strategic direction from Strategist, stakeholder context, negotiation constraints
+- Outputs: Executed negotiation actions, stakeholder interaction records, implementation status reports
+- Tool permissions: Read-write access to communication and coordination tools. Read access to project memory and strategy documents
+- When to use: Negotiation missions. Any topology requiring direct stakeholder engagement or tactical execution of an agreed strategy
+- When not to use: Pure strategy or design missions with no execution component. Missions where stakeholder interaction is not required
+
 ## Pattern Composition Rules
 
 These combinations are well-tested and recommended.
@@ -115,6 +125,7 @@ These combinations are well-tested and recommended.
 3. Strategist + Architect + Builder(s) + Verifier: Full pipeline for complex Build missions
 4. Critic + Verifier: Dual-check for high-rigor missions. Critic finds flaws, verifier confirms fixes
 5. Router + any multi-agent topology: Add when agent count exceeds 4
+6. Strategist + Operator + Verifier: Standard negotiation topology. Strategist frames, Operator executes, Verifier validates
 
 ## Anti-patterns
 

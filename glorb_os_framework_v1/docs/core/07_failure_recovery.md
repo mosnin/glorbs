@@ -58,6 +58,8 @@ Failure Recovery defines the mapping between failure classes and recovery strate
 3. The new topology may add agents (e.g., a Critic was missing), remove agents (e.g., conflicting roles), or restructure the execution order
 4. Agents already in progress are allowed to complete their current task before the topology change takes effect. Their outputs are preserved
 5. The topology change is recorded in the Provenance Graph with before and after states
+6. The recompiled topology must pass the Topology Validation checks defined in doc 21 (Step 4) before execution resumes. If validation fails, the recompilation is considered unsuccessful and the fallback strategy from the Failure-to-Recovery Mapping is invoked
+7. If the recompiled topology produces the same failure class within the same mission phase, recompilation is not reattempted. The system falls through to the next recovery strategy (typically Escalate to Human Review)
 
 ### Spawn a Specialist
 

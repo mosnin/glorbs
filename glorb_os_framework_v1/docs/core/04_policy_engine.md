@@ -142,6 +142,8 @@ Policies are not composable by default. If two policies are equally indicated by
 
 Exception: Low hallucination bias may be layered on top of any other policy as an additive overlay. When layered, it adds the Factual Challenger and factual confidence gate requirements to the base policy without replacing other settings.
 
+No other policy may be layered or composed. If constraints indicate two policies equally (for example, Deadline High and Risk High), the Constraint Compiler precedence order (see 03 Constraint Conflicts) determines which single policy is selected. The selected policy applies in full; the other is not partially applied. If the human operator needs behavior from multiple policies, they should use the OVERRIDE command (see 09) to adjust individual parameters after the base policy is selected.
+
 ## Policy Override
 
 The human operator may override the selected policy at any time using the OVERRIDE command (see 09 Human Command Layer). Policy overrides are logged to the Provenance Graph.

@@ -12,7 +12,7 @@ The following rules are always true in GLORB. No policy, override, or runtime li
 
 ### Rule 1: Memory is governed, not passive
 
-Memory is not a passive store that agents freely read and write. Every memory read and write is mediated by the governance model (see 08 Governance Model). An agent may only access the memory layers defined in its memory scope. An agent may only write to layers explicitly granted in its governance profile. The runtime adapter (see 56 Adapter Interface Spec) enforces these boundaries before executing any memory operation. Ungoverned memory access does not exist in GLORB; if a runtime cannot enforce memory scope, it cannot be used for missions that require memory isolation.
+Memory is not a passive store that agents freely read and write. Every memory read and write is mediated by the governance model (see 08 Governance Model). An agent may only access the memory layers defined in its memory scope. An agent may only write to layers explicitly granted in its governance profile. The runtime adapter (see 56 Adapter Interface Spec) enforces these boundaries before executing any memory operation. Ungoverned memory access does not exist in GLORB; if a runtime cannot enforce memory scope, it cannot be used for missions that require memory isolation. For stateless runtimes where access-time enforcement is not possible, governance is enforced at the pre-call boundary: the lead agent validates that all memory context being injected is within the stateless agent's declared memory scope before dispatching the call (see 08 Governance Model, Pre-call Governance Check). This pre-call enforcement satisfies Rule 1 — the mechanism differs, but the guarantee holds.
 
 ### Rule 2: Memory is layered, and layers have defined scopes
 

@@ -260,3 +260,267 @@ The topology halts and all active agents are paused under these conditions:
 | Shipping Readiness Gate fails after 2 retries and the criterion is a High security requirement | Lead agent | Escalate to human. Do not document as known limitation without human approval for security criteria |
 | Mission abort command | Human operator | All agents retire. Mission memory is preserved for post-mortem. No deliverable is compiled |
 | Agent count budget would be exceeded by any dynamic addition | Lead agent | Do not spawn additional agents. Route any capability gap through existing agents or escalate |
+
+---
+
+## Appendix: Disagreement Engine Example
+
+This section shows a concrete challenge-response-adjudication cycle from `mission-build-user-auth-service`, occurring during Phase 3 (Architecture Review). The Disagreement Engine was enabled for this mission because the Selected Policy is Balanced and the risk classification is Medium (doc 90, Selected Policy: "Disagreement engine: Enabled for decisions with risk Medium or higher").
+
+The challenged decision involves the token blacklist implementation specified in the architecture: an in-memory Python dictionary used by `builder-core` to track invalidated JWT tokens at logout.
+
+---
+
+### Trigger
+
+During the Architecture Coherence Gate evaluation, `critic-security` identified the in-memory token blacklist as a candidate for an Implementation Risk challenge. The challenge was initiated under Step 1 of the Challenge Protocol (doc 25): a Quality Gate evaluation triggered adversarial review. `critic-security` activated the Disagreement Engine and issued the following challenge message.
+
+---
+
+### Challenge Message
+
+```
+DISAGREEMENT ENGINE — CHALLENGE INITIATED
+Challenge ID: DE-001
+Issuing agent: critic-security
+Receiving agent: arch-user-auth
+Phase: Architecture Review (Phase 3)
+Gate: Architecture Coherence Gate
+
+TARGET
+Component: auth/tokens.py — token blacklist
+Specific decision: Architecture specification section "Token Invalidation" states that
+invalidated JWT identifiers (jti claims) are stored in a module-level in-memory set
+(blacklisted_tokens: set[str]) within auth/tokens.py. No persistence layer is
+referenced for this structure.
+
+CHALLENGER TYPE
+Implementation Risk (type 6 per doc 25)
+
+CLAIM
+The in-memory token blacklist is not production-safe. A module-level set is destroyed
+on every service restart, process crash, or horizontal scale event. Any token
+invalidated before the restart is treated as valid after it. An attacker who holds an
+invalidated token (e.g., one that was explicitly logged out) can regain authenticated
+access simply by waiting for a restart or targeting a second instance in a load-balanced
+deployment.
+
+EVIDENCE
+1. Python module-level state is not shared across processes. A deployment with two
+   worker instances of the service will each maintain independent blacklists, meaning
+   a logout on instance A leaves the token valid on instance B.
+2. The architecture specification's dependency map contains no persistence component
+   for the blacklist (only PostgreSQL for user records). Redis or equivalent is absent.
+3. The logout endpoint acceptance criterion (doc 90, Success Criteria) requires that
+   the token be "invalidated" — the word carries an implicit durability expectation
+   that the in-memory design does not satisfy in any multi-process scenario.
+4. The architecture's security decision record does not acknowledge this limitation
+   or provide a mitigation.
+
+SEVERITY
+Significant
+
+A Blocking classification was considered but rejected: the scope constraint (doc 90)
+explicitly excludes "deployment infrastructure," which is the domain where multi-process
+and multi-instance concerns are resolved. However, the risk is real enough that it
+must be addressed in the architecture's security decision record before the Build
+phase proceeds.
+
+SUGGESTED RESOLUTION
+One of the following:
+  a) Replace the in-memory set with a Redis-backed blacklist (adds a dependency;
+     may conflict with the scope constraint's exclusion of deployment infrastructure).
+  b) Document the in-memory limitation explicitly in the architecture specification's
+     security decision record as a known constraint, with a stated upgrade path. Mark
+     the current implementation as scope-appropriate with a note that production
+     deployment requires a persistent blacklist.
+  c) Redesign logout to use short-lived tokens only (reduce token TTL so the
+     invalidation window is acceptable) — eliminates the need for a blacklist
+     but changes the token refresh contract.
+```
+
+---
+
+### Response Message
+
+```
+DISAGREEMENT ENGINE — RESPONSE
+Challenge ID: DE-001
+Responding agent: arch-user-auth
+Response type: Rebut
+
+POSITION
+The challenge is technically accurate but the severity assessment does not account
+for the authoritative scope constraint. The project instance (doc 90, Scope Constraints)
+explicitly lists "deployment infrastructure" as out of scope. A persistent, multi-process
+token blacklist is a deployment infrastructure concern: it requires a running Redis
+cluster, connection management, TTL configuration, and failure-mode handling for the
+cache layer — none of which are within the defined scope of this mission.
+
+The Architecture Coherence Gate criterion (doc 92, Gate 2) requires that the design
+"satisfies stated constraints (scope: only in-scope components)." Adding Redis to
+satisfy a deployment concern that the project instance has already excluded would
+violate that criterion. The gate would fail on scope grounds if Redis were introduced.
+
+COUNTER-EVIDENCE
+1. Doc 90, Scope Constraints, Out of Scope: "deployment infrastructure, production
+   secrets management, rate limiting." A Redis instance is deployment infrastructure.
+   The scope constraint is authoritative and was set by the human operator at mission
+   instantiation.
+2. The in-memory blacklist satisfies the logout invalidation criterion as stated:
+   within a single process, the token is invalidated correctly. The acceptance criterion
+   in doc 90 does not specify durability across restarts. The criterion is: "logout
+   endpoint (invalidates token)." The implementation satisfies this literally.
+3. Doc 90, builder-core responsibility: "token blacklist (in-memory or Redis stub)."
+   The project instance itself anticipated an in-memory implementation as a valid
+   choice, and the parenthetical "(in-memory or Redis stub)" was written knowing that
+   a full Redis deployment is out of scope.
+
+REGARDING THE SUGGESTED RESOLUTIONS
+  a) Rejected: adding Redis violates the scope constraint.
+  c) Rejected: changing the token refresh contract is a scope expansion, not a fix,
+     and would require human approval.
+  b) Accepted: the architecture specification's security decision record will be
+     updated to explicitly acknowledge the in-memory limitation, state that it is
+     scope-appropriate, and document a concrete upgrade path (swap the module-level
+     set for a Redis client call in auth/tokens.py — the interface contract does not
+     change, only the backing store).
+
+PROPOSED ACTION
+The architecture specification will be revised to add the following entry to the
+security decision record before builder task briefs are issued:
+
+  "Token blacklist: In-memory implementation (set[str]). Scope-appropriate per
+  doc 90: deployment infrastructure is out of scope. Known limitation: blacklist
+  state is not durable across restarts or shared across process instances. Upgrade
+  path: replace the module-level set with a Redis client in auth/tokens.py; the
+  is_blacklisted() and blacklist_token() interface contracts remain unchanged."
+
+No change to the implementation design is required. The builder task brief for
+builder-core will reference this security decision record entry.
+```
+
+---
+
+### Adjudication Record
+
+The response constitutes a Rebut. Per doc 25, Step 4 (Adjudication), a Significant-severity challenge that has received a reasoned rebuttal does not block progress and does not require further cycles. However, `critic-security` did not withdraw the challenge, leaving the resolution to be formally adjudicated by the lead agent.
+
+```
+DISAGREEMENT ENGINE — ADJUDICATION RECORD
+Challenge ID: DE-001
+Adjudicator: arch-user-auth (lead agent, acting in adjudicator role per doc 25,
+             Step 4: Significant severity, one cycle complete)
+Date: Mission execution session 1, Phase 3
+
+POSITIONS EVALUATED
+  Challenger (critic-security): In-memory blacklist is not production-safe.
+    Severity: Significant. Evidence: multi-process state isolation, absence of
+    Redis in dependency map, implicit durability expectation in the logout criterion.
+  Producer (arch-user-auth): Scope constraint (doc 90) excludes deployment
+    infrastructure. In-memory implementation is explicitly anticipated by the project
+    instance. The logout acceptance criterion does not specify durability. Proposed
+    fix: update the security decision record with an explicit documented limitation
+    and upgrade path.
+
+EVALUATION AGAINST PROJECT CONSTRAINTS
+The scope constraint in doc 90 is authoritative. It was established by the human
+operator at mission instantiation and cannot be overridden by agent consensus. The
+constraint explicitly lists "deployment infrastructure" as out of scope. A persistent
+cache layer (Redis) is deployment infrastructure. Requiring it would violate the
+scope boundary.
+
+The challenger's technical assessment is correct: the in-memory blacklist does not
+survive restarts and does not scale horizontally. This is a real limitation. However,
+the resolution rules in doc 25 require evaluating which position is supported by
+stronger evidence relative to the project's own constraints. The scope constraint
+is the stronger authority here.
+
+The producer's proposed action — adding an explicit documented limitation to the
+security decision record — directly addresses the challenger's concern without
+violating the scope constraint. It also preserves the upgrade path for when the
+service moves to a production deployment context.
+
+OUTCOME
+Rules in favor of: arch-user-auth (producer)
+
+The in-memory token blacklist design stands. The architecture specification's
+security decision record will be updated as proposed in the Response message before
+builder task briefs are issued to builder-core and builder-api.
+
+SEVERITY RECLASSIFICATION
+The Disagreement Engine records this finding as:
+
+  Medium severity — documented limitation, not a design flaw.
+
+"Medium severity" means the limitation is real and must be visible to any future
+consumer of this codebase, but it does not constitute a design error given the
+stated scope. The finding is not a High severity defect and does not block the
+Build phase.
+
+IMPACT ON WORK PRODUCT
+  - Architecture specification, security decision record: updated with explicit
+    in-memory blacklist limitation and Redis upgrade path. (Revision made before
+    Handoff 3 and Handoff 4 are issued.)
+  - builder-core task brief: will reference the security decision record entry so
+    that builder-core implements auth/tokens.py with awareness of the documented
+    limitation.
+  - No implementation change required. No interface contract change required.
+  - The finding is NOT an unresolved High severity finding. The Architecture
+    Coherence Gate criterion "zero unresolved High findings at build start"
+    (doc 90, Success Criteria) is satisfied.
+
+DOES THIS BLOCK PROGRESS?
+No. Per doc 25, a Significant-severity challenge that has been adjudicated by the
+lead agent does not block progress.
+```
+
+---
+
+### Provenance Graph Entry
+
+Per doc 25 (Disagreement Record), the complete cycle is recorded in the Provenance Graph.
+
+```
+PROVENANCE GRAPH — DISAGREEMENT ENGINE ENTRY
+Node ID: PROV-DE-001
+Mission: mission-build-user-auth-service
+Phase: Phase 3 — Architecture Review
+
+Challenge details
+  ID: DE-001
+  Issued by: critic-security
+  Target: auth/tokens.py, token blacklist (in-memory set)
+  Challenger type: Implementation Risk (type 6)
+  Claim: In-memory blacklist is not durable across restarts or process instances
+  Severity (as issued): Significant
+
+Response details
+  Responding agent: arch-user-auth
+  Response type: Rebut
+  Counter-authority: doc 90 scope constraint ("deployment infrastructure" out of scope)
+  Proposed action: Update security decision record with documented limitation and
+                   upgrade path; no implementation change
+
+Adjudication details
+  Adjudicator: arch-user-auth (lead)
+  Outcome: Challenge rejected. Producer's position upheld
+  Severity reclassification: Medium — documented limitation, not a design flaw
+  Authority applied: doc 90 scope constraint (authoritative, set by human operator)
+
+Resolution
+  Work product change: Architecture specification, security decision record — one
+    new entry added acknowledging the in-memory limitation and stating the Redis
+    upgrade path
+  Implementation change: None
+  Interface contract change: None
+  Gate impact: Architecture Coherence Gate — passes. Zero unresolved High findings
+
+Links
+  Challenge message: DE-001
+  Response message: DE-001-R
+  Adjudication record: DE-001-ADJ
+  Affected specification section: Architecture Specification v1, Security Decision
+    Record, entry "Token blacklist"
+  Downstream task brief: builder-core task brief, section "Known Limitations"
+```

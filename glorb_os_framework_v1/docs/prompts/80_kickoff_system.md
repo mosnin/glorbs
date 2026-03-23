@@ -42,6 +42,8 @@ generate the following files:
   7. Success criteria (template 78)
   8. Runtime profile (template 79)
 
+Use the Project Instantiation Prompt (docs/prompts/82_project_instantiation_prompt.md) for detailed guidance on generating these files.
+
 STEP 4: CHECK GOVERNANCE REQUIREMENTS
 
 Before execution begins, check the following against docs/core/03_constraint_compiler.md and
@@ -71,6 +73,9 @@ Use the Topology Compiler (doc 21) to produce the final team topology:
   - Apply scaling rules based on Complexity, Ambiguity, Risk, Rigor, Budget, and Deadline.
   - Validate agent count, capability coverage, dependency graph, and governance compliance.
   - Insert Quality Gate positions (doc 26) into the execution sequence.
+  Use the Topology Compilation Prompt (docs/prompts/84_topology_compilation_prompt.md) for the full compilation procedure.
+
+If new agents must be created during topology compilation, use the Agent Creation Prompt (docs/prompts/83_agent_creation_prompt.md) to validate and specify each agent.
 
 STEP 7: SUMMARIZE BEFORE EXECUTION
 

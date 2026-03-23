@@ -19,7 +19,7 @@ The Capability Model defines the dimensions along which agent abilities are meas
 
 ## Scoring Rubric
 
-Each dimension is scored on a 3-point scale: Low, Medium, High.
+Each dimension is scored on a 5-point scale: Low, Low-Medium, Medium, Medium-High, High.
 
 ### 1 Abstraction Depth
 
@@ -80,6 +80,8 @@ Each dimension is scored on a 3-point scale: Low, Medium, High.
 - Low: General-purpose knowledge. No domain specialization
 - Medium: Working knowledge of the relevant domain. Can apply standard practices
 - High: Deep domain knowledge. Can identify domain-specific risks, patterns, and best practices
+
+Low-Medium and Medium-High are valid intermediate scores used when an agent's capability sits between two levels. For example, an Architect with Domain expertise scored Medium-High exceeds Medium (can adapt known patterns) but does not reach High (deep specialist knowledge across the domain). Intermediate scores are optional — use them when the distinction matters for agent selection or evaluation.
 
 ## Capability Profiles by Specialist Pattern
 

@@ -84,7 +84,7 @@ Promotion moves information from a lower layer to a higher (longer-lived) layer.
 Demotion moves information from a higher layer to a lower (shorter-lived) layer or removes it.
 
 1. Reusable to Archived: When patterns are superseded or no longer applicable. Human approval required
-2. Project memory pruning: The Memory Manager may compress old project memory entries. Entries older than the most recent 3 missions are candidates for compression
+2. Project memory pruning: The Memory Manager may compress old project memory entries. Entries older than the most recent 3 missions are candidates for compression. Entries untouched for 5 or more missions are candidates for archival (see 31 Retention Periods). Compression and archival are independent operations: compression reduces size while retaining the item in Project Memory; archival moves the item to Archived Memory.
 3. No layer may be deleted entirely without human approval when Risk Tolerance is High
 
 ## Cross-Layer Query
