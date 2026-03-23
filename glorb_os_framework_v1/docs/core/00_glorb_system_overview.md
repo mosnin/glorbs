@@ -34,6 +34,14 @@ GLORB begins with architecture.
 5. Native runtime logging
 6. Backend specific limits
 
+## Foundational Reading
+
+The 10 core principles that constrain all design decisions are defined in 01 Core Principles. For formal definitions of all capitalized terms used throughout this framework, see 62 Glossary.
+
+## Getting Started
+
+To orchestrate a mission, begin with the Kickoff System (see 80) or the Master Execution Prompt (see 81). These prompts guide orchestrator initialization, mission instantiation (see 82), agent creation (see 83), and topology compilation (see 84).
+
 ## Final Principle
 
 GLORB should feel like an operating system for agent architectures, not a bundle of prompts.

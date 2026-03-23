@@ -97,6 +97,10 @@ How to size the topology based on mission characteristics.
 3. Estimate the number of execution phases (sequential handoffs)
 4. Record the topology in the Provenance Graph (see 06)
 
+## Operational Prompts
+
+For the step-by-step prompt that guides an orchestrator through this compilation process, see 84 Topology Compilation Prompt. The compiled topology is recorded using template 74 Team Topology Template.
+
 ## Dynamic Topology Modification
 
 The topology can be modified during execution under these conditions:

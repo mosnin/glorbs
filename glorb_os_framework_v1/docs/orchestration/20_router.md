@@ -109,6 +109,10 @@ The Router now accepts a 9th input: the Capability Manifest of the target runtim
 
 If the runtime is Level 1 (Minimal), the Router constrains output to Solo Agent or Escalation only. If Level 2 (Standard), all topologies are available. If Level 3 (Full), all topologies with full governance features.
 
+## Operational Prompts
+
+The Router output feeds the Topology Compiler. For the full compilation procedure that consumes routing decisions, see 84 Topology Compilation Prompt. For agent creation triggered by routing decisions, see 83 Agent Creation Prompt.
+
 ## Router Anti-patterns
 
 1. Routing every mission to a full team topology regardless of complexity

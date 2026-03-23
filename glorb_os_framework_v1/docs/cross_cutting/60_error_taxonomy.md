@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The Error Taxonomy provides a unified classification system for all errors that can occur across the GLORB framework. It standardizes error identification, severity, and response, enabling consistent handling regardless of which layer or component produces the error.
+The Error Taxonomy provides a unified classification system for all errors that can occur across the GLORB framework. It standardizes error identification, severity, and response, enabling consistent handling regardless of which layer or component produces the error. For formal definitions of terms used in error descriptions, see 62 Glossary.
 
 ## Error Categories
 

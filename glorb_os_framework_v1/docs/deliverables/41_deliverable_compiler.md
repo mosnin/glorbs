@@ -29,6 +29,7 @@ Based on the mission type (see 42 Mission Types), select the appropriate section
 2. Verify all Quality Gate results are referenced
 3. Verify the deliverable addresses the original mission objective
 4. Check for internal consistency across sections
+5. For deliverables requiring formal review, apply the appropriate review protocol (see 44 Review Formats)
 
 ### Step 5: Compile
 

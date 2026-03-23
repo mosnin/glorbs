@@ -6,7 +6,7 @@ Workflow archetypes are reusable patterns for multi-phase missions. Each archety
 
 The Topology Compiler (see 21) references archetypes when constructing the execution plan in Step 5. Archetypes are stored in Reusable Memory (see 30 Layer 5) and are available as starting points for any mission. They may be modified to fit the specific mission; they are patterns, not rigid scripts.
 
-For orchestration details referenced in each archetype — handoff protocol (see 22), merge and reduction (see 24), disagreement engine (see 25), quality gates (see 26) — consult the relevant docs.
+For orchestration details referenced in each archetype — handoff protocol (see 22), merge and reduction (see 24), disagreement engine (see 25), quality gates (see 26) — consult the relevant docs. Agents performing review stages within these archetypes follow the structured evaluation protocols in 44 Review Formats.
 
 ## Archetype Definitions
 

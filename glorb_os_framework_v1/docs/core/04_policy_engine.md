@@ -144,6 +144,10 @@ Exception: Low hallucination bias may be layered on top of any other policy as a
 
 No other policy may be layered or composed. If constraints indicate two policies equally (for example, Deadline High and Risk High), the Constraint Compiler precedence order (see 03 Constraint Conflicts) determines which single policy is selected. The selected policy applies in full; the other is not partially applied. If the human operator needs behavior from multiple policies, they should use the OVERRIDE command (see 09) to adjust individual parameters after the base policy is selected.
 
+## Operational Prompts
+
+For step-by-step orchestrator instructions that apply the selected policy during mission execution, see 80 Kickoff System or 81 Master Execution Prompt. The Project Instantiation Prompt (see 82) uses the Policy Selection table above in its Step 3.
+
 ## Policy Override
 
 The human operator may override the selected policy at any time using the OVERRIDE command (see 09 Human Command Layer). Policy overrides are logged to the Provenance Graph.

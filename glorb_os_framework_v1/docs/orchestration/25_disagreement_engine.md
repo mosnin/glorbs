@@ -4,6 +4,10 @@
 
 The Disagreement Engine is a structured adversarial process that challenges decisions, outputs, and assumptions to improve quality and catch errors before they reach the deliverable. It defines challenger types, the challenge protocol, resolution rules, and when disagreement blocks progression.
 
+## Relationship to Review Formats
+
+Each challenger type below corresponds to a structured review protocol defined in 44 Review Formats. The review formats specify the evaluation criteria, inputs, and output structure that challengers use when conducting their assessments.
+
 ## Example Challenger Types
 
 1. Logic challenger

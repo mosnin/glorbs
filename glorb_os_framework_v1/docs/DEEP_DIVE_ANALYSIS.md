@@ -1,5 +1,9 @@
 # GLORB Framework: Comprehensive Deep Dive Analysis
 
+## Reference
+
+For formal definitions of all terms used in this framework, see 62 Glossary. For the foundational design constraints, see 01 Core Principles.
+
 ## What GLORB Is
 
 GLORB is a **runtime-agnostic control plane for AI agent systems** — an "operating system for agent architectures." Its core thesis:
@@ -106,9 +110,9 @@ This separation means you can swap Claude Code for OpenClaw or NanoClaw without 
 
 ### 7. Templates, Prompts, Examples, Schemas
 
-**10 Templates** (project, mission, agent, specialist, team, workflow, deliverable, constraints, success criteria, runtime profile).
+**10 Templates** (70 project instantiation, 71 mission, 72 agent, 73 specialist agent, 74 team topology, 75 workflow, 76 deliverable, 77 constraints, 78 success criteria, 79 runtime profile).
 
-**5 Prompts** (kickoff system, master execution, project instantiation, agent creation, topology compilation).
+**5 Prompts** (80 kickoff system, 81 master execution, 82 project instantiation, 83 agent creation, 84 topology compilation).
 
 **5 YAML Schemas** (portable agent spec, mission, team topology, deliverable, runtime profile).
 

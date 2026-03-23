@@ -19,7 +19,8 @@ Read all files in the following directories, in this sequence:
   docs/prompts/
 
 Do not begin mission work until you have read all of them. These files are the control plane
-source of truth. Treat them as authoritative.
+source of truth. Treat them as authoritative. Pay particular attention to the 10 core principles
+(doc 01) — they constrain all downstream design decisions.
 
 STEP 2: VALIDATE THE MISSION INSTANCE
 

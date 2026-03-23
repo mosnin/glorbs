@@ -91,6 +91,10 @@ Not all gates are required for every mission. The active Policy (see 04 Policy E
 - Fail: Open issues or unmet criteria. Action: Return to the responsible agent for resolution. If the issue cannot be resolved, document it as a known limitation in the deliverable
 - Output: Ship/no-ship decision with rationale
 
+## Review Protocols
+
+Evaluators conducting gate assessments follow the structured review protocols defined in 44 Review Formats. Each review format specifies the evaluation criteria, required inputs, and output structure appropriate to the type of assessment (logic, risk, UX, factual, scope, or governance).
+
 ## Gate Failure Handling
 
 When a gate fails:

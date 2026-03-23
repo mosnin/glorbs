@@ -33,7 +33,7 @@ The Runtime Selection Policy defines how the system chooses which runtime to use
 
 ### Step 1: Determine Hard Requirements
 
-For each agent in the topology, identify non-negotiable requirements:
+For each agent in the topology (as compiled by 21 Topology Compiler), identify non-negotiable requirements by consulting the target runtime's Capability Manifest (see 57):
 
 1. If the agent needs file read/write access -> exclude NanoClaw
 2. If the agent needs code execution -> exclude NanoClaw
