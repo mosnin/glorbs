@@ -88,11 +88,11 @@ The Policy Engine selects and enforces a coherent set of operational parameters 
 |---|---|
 | Max agent count | 4 |
 | Critique intensity | Dedicated Factual Challenger (see 25 Disagreement Engine) |
-| Quality gates | Factual confidence gate required with strict threshold |
+| Quality gates | Factual Confidence Gate required with strict threshold |
 | Memory depth | Full provenance. Every claim must trace to a source |
 | Deliverable depth | Standard with mandatory source citations |
 | Disagreement engine | Enabled. Factual challenger always active |
-| Human checkpoints | At factual confidence gate if confidence is below threshold |
+| Human checkpoints | At Factual Confidence Gate if confidence is below threshold |
 | Autonomy level | Restricted on factual claims. Must cite or flag uncertainty |
 
 ### Human In Loop Required
@@ -140,7 +140,7 @@ The Policy Engine selects a policy based on the Constraint Compiler output (see 
 
 Policies are not composable by default. If two policies are equally indicated by constraints, the Constraint Compiler precedence order (see 03 Constraint Conflicts) determines which wins.
 
-Exception: Low hallucination bias may be layered on top of any other policy as an additive overlay. When layered, it adds the Factual Challenger and factual confidence gate requirements to the base policy without replacing other settings.
+Exception: Low hallucination bias may be layered on top of any other policy as an additive overlay. When layered, it adds the Factual Challenger and Factual Confidence Gate requirements to the base policy without replacing other settings.
 
 No other policy may be layered or composed. If constraints indicate two policies equally (for example, Deadline High and Risk High), the Constraint Compiler precedence order (see 03 Constraint Conflicts) determines which single policy is selected. The selected policy applies in full; the other is not partially applied. If the human operator needs behavior from multiple policies, they should use the OVERRIDE command (see 09) to adjust individual parameters after the base policy is selected.
 

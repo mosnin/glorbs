@@ -46,7 +46,7 @@ Design and implement a production-ready REST API microservice for user authentic
 
 | Field | Value |
 |---|---|
-| Quality bar | Medium-High |
+| Quality bar | High |
 | Unit test coverage | Minimum 80% |
 | Code style | PEP 8 compliant, enforced via `ruff` |
 | API contract | All endpoints must match the OpenAPI spec produced by the Architect. No undocumented fields in request or response bodies |
@@ -76,14 +76,14 @@ Design and implement a production-ready REST API microservice for user authentic
 |---|---|
 | Max agent count | 5 |
 | Critique intensity | Single Critic, one review pass |
-| Quality gates | Sufficient Context, Factual Confidence, Shipping Readiness |
+| Quality gates | Sufficient Context, Architecture Coherence, Implementation Readiness, Factual Confidence, Shipping Readiness |
 | Memory depth | Working, session, and mission memory |
 | Deliverable depth | Standard with rationale section |
 | Disagreement engine | Enabled for decisions with risk Medium or higher |
 | Human checkpoints | At mission start and final deliverable |
 | Autonomy level | Autonomous within defined scope |
 
-Policy selection rationale: Deadline is Medium, quality bar is Medium-High, risk is Medium. No single constraint dominates. Balanced policy is the correct default per doc 04 constraint-to-policy mapping.
+Policy selection rationale: Deadline is Medium, quality bar is High, risk is Medium. No single constraint dominates. Balanced policy is the correct default per doc 04 constraint-to-policy mapping.
 
 ## Proposed Topology
 

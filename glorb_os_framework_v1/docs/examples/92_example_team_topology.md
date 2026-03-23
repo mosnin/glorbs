@@ -200,7 +200,7 @@ Merge and Reduction (doc 24) occurs at two points in this topology.
 
 ## Quality Gates
 
-Gates follow the definitions in doc 26. The Balanced policy activates the three gates listed below (doc 90, Selected Policy).
+Gates follow the definitions in doc 26. The Balanced policy activates the five gates listed below (doc 90, Selected Policy).
 
 ### Gate 1: Sufficient Context Gate
 
@@ -224,18 +224,7 @@ Gates follow the definitions in doc 26. The Balanced policy activates the three 
 | Fail | Any High severity finding. Return to `arch-user-auth` for revision. Revision includes only the components cited in the High findings |
 | Retry limit | 2 retries. After 2 failed revisions, escalate to human operator before a third attempt |
 
-### Gate 3: Shipping Readiness Gate
-
-| Field | Value |
-|---|---|
-| When | After `verifier-coverage` produces the verification report |
-| Evaluator | `arch-user-auth` (lead) |
-| Criteria | All prior gates have passed. Verification report shows: all four endpoints callable (pytest passes), coverage at or above 80%, OpenAPI spec generated without error, ruff exits with code 0 or documented suppressions, no plaintext password storage, JWT uses RS256. All acceptance criteria from doc 90 Success Criteria section are met. No open High severity findings from `critic-security` |
-| Pass | Deliverable is compiled. Mission is complete. Human operator is notified |
-| Fail | Any unmet criterion. Return to the responsible agent (builder if implementation gap, verifier if measurement gap). Document unresolvable issues as known limitations |
-| Retry limit | 2 retries per responsible agent. After 2 failures, document as known limitation and present to human for disposition |
-
-### Implementation Readiness Gate (Per Builder)
+### Gate 3: Implementation Readiness Gate (Per Builder)
 
 | Field | Value |
 |---|---|
@@ -245,6 +234,28 @@ Gates follow the definitions in doc 26. The Balanced policy activates the three 
 | Pass | Builder begins immediately |
 | Fail | Return builder task brief to the Architect for completion. Builder waits |
 | Retry limit | 1 (the Architect corrects the brief) |
+
+### Gate 4: Factual Confidence Gate
+
+| Field | Value |
+|---|---|
+| When | After implementation is complete and before verification of shipping readiness. Evaluated after Builder agents finish |
+| Evaluator | `critic-security` |
+| Criteria | All docstrings and inline comments accurately describe behavior. README claims match actual implementation. No hallucinated capabilities (e.g., claiming Redis support when only in-memory blacklist exists). Security claims in documentation are verifiable against the code |
+| Pass | Documentation is factually accurate. Proceed to Shipping Readiness Gate |
+| Fail | Inaccurate claims identified. Return to responsible Builder for correction with specific findings |
+| Retry limit | 2 retries. After 2 failures, flag inaccurate claims as known issues in the deliverable |
+
+### Gate 5: Shipping Readiness Gate
+
+| Field | Value |
+|---|---|
+| When | After `verifier-coverage` produces the verification report |
+| Evaluator | `arch-user-auth` (lead) |
+| Criteria | All prior gates have passed. Verification report shows: all four endpoints callable (pytest passes), coverage at or above 80%, OpenAPI spec generated without error, ruff exits with code 0 or documented suppressions, no plaintext password storage, JWT uses RS256. All acceptance criteria from doc 90 Success Criteria section are met. No open High severity findings from `critic-security` |
+| Pass | Deliverable is compiled. Mission is complete. Human operator is notified |
+| Fail | Any unmet criterion. Return to the responsible agent (builder if implementation gap, verifier if measurement gap). Document unresolvable issues as known limitations |
+| Retry limit | 2 retries per responsible agent. After 2 failures, document as known limitation and present to human for disposition |
 
 ---
 

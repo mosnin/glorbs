@@ -49,7 +49,7 @@ The Architect holds Decide authority for architectural choices within the stated
 
 ## Capability Profile
 
-Scores follow the 3-point scale defined in doc 11 (Low, Medium, High).
+Scores follow the 5-point scale defined in doc 11 (Low, Low-Medium, Medium, Medium-High, High).
 
 | Dimension | Score | Rationale |
 |---|---|---|
