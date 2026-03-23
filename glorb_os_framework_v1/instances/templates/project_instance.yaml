@@ -1,0 +1,11 @@
+project_name: ""
+mission_name: ""
+mission_type: ""
+runtime_target: ""
+core_objective: ""
+constraints: {}
+selected_policy: ""
+proposed_topology: ""
+required_agents: []
+required_deliverables: []
+success_criteria: []

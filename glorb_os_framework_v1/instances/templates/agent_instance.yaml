@@ -1,0 +1,12 @@
+name: ""
+role_type: ""
+purpose: ""
+scope: ""
+capability_profile: {}
+tool_permissions: []
+memory_scope: ""
+input_contract: {}
+output_contract: {}
+escalation_rules: []
+stop_conditions: []
+success_criteria: []

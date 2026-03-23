@@ -1,0 +1,8 @@
+topology_name: string
+mission_type: string
+lead_agent: string
+specialists: list
+handoff_rules: list
+merge_rules: list
+quality_gates: list
+stop_conditions: list

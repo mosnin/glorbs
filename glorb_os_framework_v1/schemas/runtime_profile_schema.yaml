@@ -1,0 +1,9 @@
+runtime_name: string
+tool_model: string
+session_model: string
+memory_interface: string
+file_access: string
+subagent_support: string
+approval_model: string
+limits: object
+notes: string

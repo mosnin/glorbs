@@ -1,0 +1,7 @@
+deliverable_name: string
+mission_type: string
+audience: string
+required_sections: list
+optional_sections: list
+risk_notes: list
+open_questions: list

@@ -1,0 +1,9 @@
+mission_name: string
+mission_type: string
+objective: string
+constraints: object
+risk_level: string
+reversibility: string
+required_rigor: string
+expected_deliverables: list
+runtime_target: string

@@ -1,0 +1,12 @@
+name: string
+role_type: string
+purpose: string
+scope: string
+capability_profile: object
+tool_permissions: list
+memory_scope: string
+input_contract: object
+output_contract: object
+escalation_rules: list
+stop_conditions: list
+success_criteria: list
