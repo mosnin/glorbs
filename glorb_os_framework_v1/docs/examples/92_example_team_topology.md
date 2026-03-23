@@ -1,14 +1,262 @@
-# Example Team Topology
+# 92 Example Team Topology: REST API Microservice Build
 
-## Pattern
-Researcher plus synthesizer plus challenger
+This is the fully compiled team topology for `mission-build-user-auth-service`. It was produced by the Topology Compiler (doc 21) from the project instance (doc 90) using the Build mission type to topology mapping (doc 21, Mission Type to Topology Mapping). Cross-reference with the agent specification in doc 91 for the full `arch-user-auth` spec.
 
-## Lead
-Synthesizer
+---
 
-## Support
-Researcher
-Challenger
+## Topology Pattern
 
-## Merge Rule
-Synthesizer owns final integration after challenger review
+**Architect plus Builders plus Critic**
+
+Selected because:
+
+- Mission type is Build with structural complexity (multiple distinct components: auth logic, database layer, route handlers, test suite)
+- Quality bar is Medium-High, which triggers Critic inclusion per the scaling rules (doc 21)
+- Risk is Medium (security-sensitive domain), which confirms Critic inclusion
+- Balanced policy permits up to 5 agents, which fits the 5-agent instance below
+
+Agent count: 5 (within Balanced policy limit of 5).
+
+Runtime: Claude Code. All agents execute on the Claude Code runtime. Topology validated against the Claude Code capability manifest (doc 57): subagent nesting depth 1 (satisfied: no agent spawns subagents), max concurrent agents 8 (satisfied: 5 agents), all required tool categories available.
+
+---
+
+## Lead Agent
+
+| Field | Value |
+|---|---|
+| Name | `arch-user-auth` |
+| Role type | Architect |
+| Authority | Decide |
+| Responsibilities | Coordinates all phases. Distributes task briefs to Builder agents. Receives Critic feedback and resolves findings. Evaluates Quality Gate criteria. Receives Verifier report and produces the final mission handoff to the human operator |
+| Full spec | See doc 91 |
+
+The Architect is the lead agent for this topology. It owns the mission execution sequence and is the single convergence point for all phase outputs.
+
+---
+
+## Specialist Agents
+
+| Agent Name | Role Type | Authority | Primary Responsibility |
+|---|---|---|---|
+| `critic-security` | Critic | Execute | Adversarial review of the architecture specification for security gaps, anti-patterns, and constraint violations. Produces severity-ranked findings before Build phase begins |
+| `builder-core` | Builder | Execute | Implements authentication business logic: password hashing (bcrypt), JWT creation and validation (RS256), and token blacklist management |
+| `builder-api` | Builder | Execute | Implements FastAPI route handlers, Pydantic request/response models, SQLAlchemy ORM models, database session management, and OpenAPI annotations |
+| `verifier-coverage` | Verifier | Execute | Executes the full test suite, validates coverage threshold (80%), confirms OpenAPI spec generation, and checks PEP 8 compliance |
+
+### Capability Profiles (Abbreviated)
+
+| Dimension | critic-security | builder-core | builder-api | verifier-coverage |
+|---|---|---|---|---|
+| Abstraction depth | Medium | Medium | Medium | Medium |
+| Precision | High | High | High | High |
+| Creativity | Low | Low | Low | Low |
+| Risk tolerance | Low | Low | Low | Low |
+| Adversarial rigor | High | Low | Low | Medium-High |
+| Tool access | Low | High | High | High |
+| Domain expertise | Medium | Medium-High | Medium-High | Medium |
+
+Profiles follow the defaults for each specialist pattern (doc 11, Capability Profiles by Specialist Pattern).
+
+---
+
+## Execution Phases and Handoff Sequence
+
+The topology executes in five ordered phases. Quality Gates are evaluated by the lead agent unless a dedicated evaluator is specified.
+
+```
+Phase 1: Context Validation
+  Lead: arch-user-auth
+  Gate: Sufficient Context Gate
+  Condition: All inputs confirmed. Proceed to Phase 2.
+
+Phase 2: Architecture
+  Worker: arch-user-auth (acting as architect, not coordinator)
+  Output: architecture_specification, interface_contracts, dependency_map,
+          security_decision_record, builder_task_briefs
+
+Phase 3: Architecture Review
+  Worker: critic-security
+  Gate: Architecture Coherence Gate
+  Input: From arch-user-auth (Handoff)
+  Output: security_critique_report
+
+Phase 4: Build (Parallel)
+  Workers: builder-core, builder-api (simultaneous)
+  Gate: Implementation Readiness Gate (evaluated per builder before start)
+  Inputs: Builder task briefs from arch-user-auth (Handoff per builder)
+  Outputs: Core implementation files, API implementation files
+
+Phase 5: Verification
+  Worker: verifier-coverage
+  Input: All source files from builder-core and builder-api (Handoff)
+  Output: verification_report
+
+Final Gate: Shipping Readiness Gate
+  Evaluator: arch-user-auth (lead)
+  Input: verification_report + all prior gate results
+  Output: Ship / No-ship decision
+```
+
+---
+
+## Handoff Rules
+
+Handoffs follow the protocol defined in doc 22. Each handoff is a structured message with: artifact, completion status, open issues, and provenance references.
+
+### Handoff 1: arch-user-auth → critic-security
+
+| Field | Value |
+|---|---|
+| Trigger | Architecture phase complete. All output contract items produced |
+| From | `arch-user-auth` |
+| To | `critic-security` |
+| Artifact | Architecture specification document (all sections) |
+| Included context | Project constraints, security requirements, out-of-scope list, mission objective |
+| Validation by receiver | `critic-security` confirms it has received: component list, interface contracts, dependency map, security decision record, and the evaluation criteria from the project constraints. If any section is missing, sends a Request back to `arch-user-auth` before beginning review |
+| Format | Markdown document passed as Handoff message payload |
+
+### Handoff 2: critic-security → arch-user-auth
+
+| Field | Value |
+|---|---|
+| Trigger | Security critique complete |
+| From | `critic-security` |
+| To | `arch-user-auth` |
+| Artifact | Security critique report: severity-ranked findings (High / Medium / Low), recommended resolutions per finding |
+| Required action by receiver | `arch-user-auth` must resolve all High findings before issuing builder task briefs. Medium and Low findings may be deferred with documented rationale |
+| Format | Structured Markdown with one section per finding: severity, description, affected component, recommended resolution |
+
+### Handoff 3: arch-user-auth → builder-core
+
+| Field | Value |
+|---|---|
+| Trigger | Architecture Coherence Gate passes. All High critique findings resolved |
+| From | `arch-user-auth` |
+| To | `builder-core` |
+| Artifact | Builder task brief for core authentication logic: scope, acceptance criteria, interface contracts for `auth/security.py` and `auth/tokens.py`, confirmed tool list |
+| Format | Markdown task brief |
+
+### Handoff 4: arch-user-auth → builder-api
+
+| Field | Value |
+|---|---|
+| Trigger | Same trigger as Handoff 3. Issued simultaneously |
+| From | `arch-user-auth` |
+| To | `builder-api` |
+| Artifact | Builder task brief for API layer: scope, acceptance criteria, interface contracts for `api/routes/auth.py`, `api/models.py`, `db/models.py`, `db/session.py`, confirmed tool list |
+| Format | Markdown task brief |
+| Parallelism note | Handoffs 3 and 4 are issued in the same response. `builder-core` and `builder-api` execute simultaneously per doc 22, Parallel Execution Rules. Neither has a blocking dependency on the other's output |
+
+### Handoff 5: builder-core + builder-api → verifier-coverage
+
+| Field | Value |
+|---|---|
+| Trigger | Both Builder agents complete and signal readiness. Convergence point: neither Verifier task begins until both builders have returned results |
+| From | `arch-user-auth` (lead mediates the merge) |
+| To | `verifier-coverage` |
+| Artifact | All implementation source files, the full test suite, the acceptance criteria list, the quality thresholds (80% coverage, ruff pass, OpenAPI generation) |
+| Merge note | The lead agent performs a lightweight Inventory and Scope Alignment check (doc 24) before dispatching to Verifier: confirms both builders produced all required files, no interface contract was left unimplemented |
+| Format | File list with paths + verification acceptance criteria document |
+
+### Handoff 6: verifier-coverage → arch-user-auth
+
+| Field | Value |
+|---|---|
+| Trigger | Verification complete |
+| From | `verifier-coverage` |
+| To | `arch-user-auth` |
+| Artifact | Verification report: coverage summary (percentage + per-file), OpenAPI validation result, ruff result, per-criterion pass/fail against success criteria from doc 90 |
+| Format | Structured Markdown report |
+
+---
+
+## Merge Rules
+
+Merge and Reduction (doc 24) occurs at two points in this topology.
+
+### Merge Point 1: Builder Convergence (Pre-Verification)
+
+| Field | Value |
+|---|---|
+| Performed by | `arch-user-auth` (lead, acting as lightweight Synthesizer) |
+| Inputs | Output from `builder-core`, output from `builder-api` |
+| Conflict type expected | Soft conflicts only: minor terminology differences or duplicated utility functions. Hard conflicts (contradictory implementations of the same interface) are unexpected because the Architect issued disjoint task briefs |
+| Conflict resolution | If a hard conflict is detected (e.g., both builders implemented the same function differently), `arch-user-auth` resolves by applying the interface contract as the authority. The implementation that matches the contract wins. The deviation is logged |
+| Scope alignment check | Lead verifies all interface contracts from the architecture specification are implemented. Any gap is flagged as incomplete work and returned to the responsible builder |
+| Redundancy removal | If both builders produced overlapping utility functions (e.g., error classes), the lead designates the canonical location per the architecture's module structure |
+| Merge output | A coherent file set with no duplicate implementations and no unimplemented contracts, passed to `verifier-coverage` as Handoff 5 |
+
+### Merge Point 2: Final Deliverable Compilation
+
+| Field | Value |
+|---|---|
+| Performed by | `arch-user-auth` (lead) |
+| Inputs | Architecture specification, security critique report, verification report, all implementation files |
+| Provenance map | Each deliverable section is attributed to its producing agent |
+| Output | Project deliverable package: implementation files + README authored by `arch-user-auth` post-verification |
+
+---
+
+## Quality Gates
+
+Gates follow the definitions in doc 26. The Balanced policy activates the three gates listed below (doc 90, Selected Policy).
+
+### Gate 1: Sufficient Context Gate
+
+| Field | Value |
+|---|---|
+| When | Before `arch-user-auth` begins architectural work |
+| Evaluator | `arch-user-auth` (lead) |
+| Criteria | Mission objective is unambiguous. Constraint set is complete and non-contradictory. All required inputs are present (mission objective, constraint set, runtime manifest, specialist availability, out-of-scope list). At least one viable architectural approach has been identified |
+| Pass | All criteria met. Architecture phase begins |
+| Fail | Missing inputs or unresolved ambiguities. Escalate to human operator. Do not begin architecture |
+| Retry limit | 1 retry (human provides missing information). If unresolved after 1 retry, mission is blocked |
+
+### Gate 2: Architecture Coherence Gate
+
+| Field | Value |
+|---|---|
+| When | After `arch-user-auth` produces the architecture specification, before Builder agents begin |
+| Evaluator | `critic-security` |
+| Criteria | All components in scope are present and necessary. No speculative additions. Component interfaces are fully typed (input/output/error contracts). Dependency graph is acyclic. Design satisfies stated constraints (security: bcrypt + RS256 + no secrets in source, scope: only in-scope components, quality: contracts precise enough for 80% test coverage target). Risk areas are identified with mitigations |
+| Pass | All criteria met, or remaining issues are Low severity and documented. Build phase begins |
+| Fail | Any High severity finding. Return to `arch-user-auth` for revision. Revision includes only the components cited in the High findings |
+| Retry limit | 2 retries. After 2 failed revisions, escalate to human operator before a third attempt |
+
+### Gate 3: Shipping Readiness Gate
+
+| Field | Value |
+|---|---|
+| When | After `verifier-coverage` produces the verification report |
+| Evaluator | `arch-user-auth` (lead) |
+| Criteria | All prior gates have passed. Verification report shows: all four endpoints callable (pytest passes), coverage at or above 80%, OpenAPI spec generated without error, ruff exits with code 0 or documented suppressions, no plaintext password storage, JWT uses RS256. All acceptance criteria from doc 90 Success Criteria section are met. No open High severity findings from `critic-security` |
+| Pass | Deliverable is compiled. Mission is complete. Human operator is notified |
+| Fail | Any unmet criterion. Return to the responsible agent (builder if implementation gap, verifier if measurement gap). Document unresolvable issues as known limitations |
+| Retry limit | 2 retries per responsible agent. After 2 failures, document as known limitation and present to human for disposition |
+
+### Implementation Readiness Gate (Per Builder)
+
+| Field | Value |
+|---|---|
+| When | Before each Builder begins. Evaluated separately for `builder-core` and `builder-api` |
+| Evaluator | `arch-user-auth` (lead) |
+| Criteria | Builder task brief includes acceptance criteria. Required tools are confirmed available (Read, Write, Edit, Bash for test execution). Scope is bounded. No unresolved blocking dependencies on the other builder's output |
+| Pass | Builder begins immediately |
+| Fail | Return builder task brief to the Architect for completion. Builder waits |
+| Retry limit | 1 (the Architect corrects the brief) |
+
+---
+
+## Stop Conditions
+
+The topology halts and all active agents are paused under these conditions:
+
+| Condition | Trigger | Action |
+|---|---|---|
+| `FREEZE` command | Human operator | All agents pause. State is preserved. No agent sends or receives messages until `RESUME` |
+| Architecture Coherence Gate fails after 2 retries | Automated | Escalate to human before third revision attempt. Mission execution pauses |
+| Hard conflict at Builder convergence cannot be resolved by interface contract authority | Lead agent | Escalate to human. Document both conflicting implementations |
+| Shipping Readiness Gate fails after 2 retries and the criterion is a High security requirement | Lead agent | Escalate to human. Do not document as known limitation without human approval for security criteria |
+| Mission abort command | Human operator | All agents retire. Mission memory is preserved for post-mortem. No deliverable is compiled |
+| Agent count budget would be exceeded by any dynamic addition | Lead agent | Do not spawn additional agents. Route any capability gap through existing agents or escalate |
